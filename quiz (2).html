@@ -1,0 +1,830 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#36B37E">
+<title>Howzat! Cricket Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Quicksand:wght@500;600;700&family=Chakra+Petch:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --grass:#36B37E;
+    --grass-dark:#1F8F63;
+    --grass-light:#A6EBC9;
+    --cream:#FFF9EE;
+    --ball-red:#FF5A4E;
+    --ball-red-dark:#D6453A;
+    --sun-gold:#FFC93C;
+    --sun-gold-dark:#E8A91F;
+    --sky-blue:#4DA8DA;
+    --ink:#1F3B4D;
+    --ink-soft:#5C7A8A;
+    --white:#FFFFFF;
+    --shadow: 0 10px 28px rgba(31,59,77,0.14);
+    --radius-lg: 26px;
+    --radius-md: 18px;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html,body{
+    margin:0;
+    padding:0;
+    min-height:100%;
+  }
+
+  body{
+    font-family:'Quicksand', sans-serif;
+    color: var(--ink);
+    background: radial-gradient(circle at 15% 0%, #DFF6FF 0%, transparent 55%),
+                radial-gradient(circle at 100% 15%, #FFF0DC 0%, transparent 50%),
+                linear-gradient(180deg, #EAF8FF 0%, #FFF6E8 100%);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding: 18px 14px 40px;
+    overflow-x:hidden;
+  }
+
+  h1,h2,h3{
+    font-family:'Fredoka', sans-serif;
+    margin:0;
+  }
+
+  #app{
+    width:100%;
+    max-width: 480px;
+    position:relative;
+  }
+
+  .screen{ display:none; animation: fadeUp .45s ease; }
+  .screen.active{ display:block; }
+
+  @keyframes fadeUp{
+    from{ opacity:0; transform:translateY(10px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  /* ---------- decorative blobs ---------- */
+  .blob{
+    position:absolute;
+    border-radius:50%;
+    filter: blur(2px);
+    opacity:.5;
+    z-index:-1;
+  }
+
+  /* ---------- HOME SCREEN ---------- */
+  .home-card{
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 28px 22px 26px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .mascot{
+    width:84px; height:84px;
+    border-radius:50%;
+    background: linear-gradient(145deg, var(--sun-gold), var(--ball-red));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:42px;
+    margin: 0 auto 14px;
+    box-shadow: 0 8px 18px rgba(255,90,78,.35);
+    animation: bob 3.2s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce){ .mascot{ animation:none; } }
+  @keyframes bob{
+    0%,100%{ transform: translateY(0) rotate(-3deg); }
+    50%{ transform: translateY(-6px) rotate(3deg); }
+  }
+
+  .home-card h1{
+    font-size: clamp(26px, 7vw, 32px);
+    color: var(--grass-dark);
+    letter-spacing:.5px;
+  }
+  .tagline{
+    color: var(--ink-soft);
+    font-weight:600;
+    margin-top:6px;
+    font-size:15px;
+  }
+
+  .eyebrow{
+    text-transform:uppercase;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:1.4px;
+    color: var(--ink-soft);
+    margin: 22px 0 10px;
+    text-align:left;
+  }
+
+  .mode-list{ display:flex; flex-direction:column; gap:12px; }
+
+  .mode-card{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    text-align:left;
+    width:100%;
+    border:2px solid transparent;
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    background: var(--cream);
+    cursor:pointer;
+    font-family:'Quicksand', sans-serif;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    min-height:64px;
+  }
+  .mode-card:hover{ transform: translateY(-3px); box-shadow: 0 10px 18px rgba(31,59,77,.12); }
+  .mode-card:active{ transform: translateY(0); }
+  .mode-card:focus-visible{ outline:3px solid var(--sky-blue); outline-offset:2px; }
+
+  .mode-icon{
+    flex:0 0 auto;
+    width:46px; height:46px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px;
+  }
+  .mode-basic{ border-color: var(--grass-light); }
+  .mode-basic .mode-icon{ background: var(--grass-light); }
+  .mode-medium{ border-color: #FFE2A6; }
+  .mode-medium .mode-icon{ background: #FFE2A6; }
+  .mode-hard{ border-color: #FFC2BC; }
+  .mode-hard .mode-icon{ background: #FFC2BC; }
+
+  .mode-title{ font-weight:700; font-size:17px; color: var(--ink); }
+  .mode-stars{ font-size:12px; color: var(--sun-gold-dark); letter-spacing:1px; margin-top:2px; }
+  .mode-desc{ font-size:12.5px; color: var(--ink-soft); margin-top:2px; }
+
+  .legend{
+    margin-top:22px;
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    font-size:11.5px;
+    color: var(--ink-soft);
+    font-weight:600;
+  }
+  .legend span{ display:block; }
+  .legend .lg-badge{ font-size:16px; }
+
+  .footer-note{
+    margin-top:18px;
+    font-size:12px;
+    color: var(--ink-soft);
+    opacity:.85;
+  }
+
+  /* ---------- QUIZ SCREEN ---------- */
+  .quiz-topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .icon-btn{
+    background: var(--white);
+    border:none;
+    width:42px; height:42px;
+    border-radius:50%;
+    font-size:18px;
+    box-shadow: var(--shadow);
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .icon-btn:focus-visible{ outline:3px solid var(--sky-blue); }
+
+  .mode-chip{
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+    font-size:13px;
+    background: var(--white);
+    box-shadow: var(--shadow);
+    border-radius:999px;
+    padding:8px 14px;
+    color: var(--ink);
+  }
+
+  .score-chip{
+    font-family:'Chakra Petch', monospace;
+    font-weight:700;
+    font-size:14px;
+    background: var(--ink);
+    color: var(--white);
+    border-radius:999px;
+    padding:8px 14px;
+    box-shadow: var(--shadow);
+  }
+
+  /* pitch progress bar */
+  .progress-wrap{
+    background: var(--white);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow);
+    padding:12px 14px 14px;
+    margin-bottom:16px;
+  }
+  .progress-label{
+    display:flex;
+    justify-content:space-between;
+    font-size:12px;
+    font-weight:700;
+    color: var(--ink-soft);
+    margin-bottom:8px;
+  }
+  .progress-track{
+    position:relative;
+    height:16px;
+    border-radius:999px;
+    background: repeating-linear-gradient(
+      90deg, #FFF3DC 0px, #FFF3DC 10px, #FCEBC8 10px, #FCEBC8 20px
+    );
+    overflow:visible;
+  }
+  .progress-fill{
+    position:absolute;
+    top:0; left:0; height:100%;
+    border-radius:999px;
+    background: linear-gradient(90deg, var(--grass-dark), var(--grass));
+    transition: width .5s ease;
+  }
+  .progress-ball{
+    position:absolute;
+    top:50%;
+    transform: translate(-50%,-50%);
+    font-size:20px;
+    transition: left .5s ease;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,.25));
+  }
+  .progress-finish{
+    position:absolute;
+    right:-4px;
+    top:50%;
+    transform: translateY(-50%);
+    font-size:16px;
+  }
+
+  .question-card{
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 22px 20px 20px;
+  }
+  .q-eyebrow{
+    font-size:11.5px;
+    font-weight:700;
+    letter-spacing:1.2px;
+    text-transform:uppercase;
+    color: var(--sky-blue);
+    margin-bottom:8px;
+  }
+  .q-text{
+    font-family:'Fredoka', sans-serif;
+    font-size: clamp(18px, 4.6vw, 21px);
+    line-height:1.35;
+    color: var(--ink);
+    margin-bottom:18px;
+    min-height:48px;
+  }
+
+  .options{ display:flex; flex-direction:column; gap:10px; }
+
+  .option{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    width:100%;
+    text-align:left;
+    background: var(--cream);
+    border:2px solid #F1E6D2;
+    border-radius: var(--radius-md);
+    padding: 13px 14px;
+    font-family:'Quicksand', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    color: var(--ink);
+    cursor:pointer;
+    transition: border-color .15s ease, background .15s ease, transform .12s ease;
+    min-height:50px;
+  }
+  .option:hover:not(.locked){ border-color: var(--sky-blue); transform: translateY(-1px); }
+  .option:focus-visible{ outline:3px solid var(--sky-blue); outline-offset:1px; }
+  .option .opt-letter{
+    flex:0 0 auto;
+    width:28px; height:28px;
+    border-radius:50%;
+    background: var(--white);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Chakra Petch', monospace;
+    font-weight:700;
+    font-size:13px;
+    color: var(--ink-soft);
+  }
+  .option.locked{ cursor:default; }
+  .option.correct{
+    background: var(--grass-light);
+    border-color: var(--grass-dark);
+    color: var(--ink);
+  }
+  .option.correct .opt-letter{ background: var(--grass-dark); color:#fff; }
+  .option.wrong{
+    background: #FFE1DE;
+    border-color: var(--ball-red-dark);
+  }
+  .option.wrong .opt-letter{ background: var(--ball-red-dark); color:#fff; }
+  .option.dim{ opacity:.55; }
+
+  /* ---------- RESULT SCREEN ---------- */
+  .result-card{
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 30px 22px 26px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+  }
+  .result-eyebrow{
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:1.4px;
+    text-transform:uppercase;
+    color: var(--ink-soft);
+  }
+  .result-mode{
+    font-weight:700;
+    color: var(--sky-blue);
+    font-size:13px;
+    margin-top:4px;
+  }
+  .scoreboard{
+    font-family:'Chakra Petch', monospace;
+    font-weight:700;
+    font-size:54px;
+    color: var(--ink);
+    background: var(--ink);
+    background: linear-gradient(180deg, #16222b, #1F3B4D);
+    color:#BFF5D6;
+    border-radius: 18px;
+    padding: 18px 10px;
+    margin: 16px 0 18px;
+    letter-spacing:2px;
+    box-shadow: inset 0 0 0 4px #0f1c24;
+  }
+  .scoreboard small{
+    display:block;
+    font-family:'Quicksand', sans-serif;
+    font-size:12px;
+    color:#8FE3B3;
+    letter-spacing:1px;
+    margin-top:4px;
+    font-weight:700;
+  }
+
+  .badge{
+    display:inline-flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    padding: 16px 22px;
+    border-radius: 22px;
+    margin-bottom:14px;
+  }
+  .badge .badge-icon{ font-size:46px; line-height:1; }
+  .badge .badge-title{
+    font-family:'Fredoka', sans-serif;
+    font-size:20px;
+    font-weight:700;
+  }
+  .badge-learning{ background: #E8F8EE; color:#1F8F63; }
+  .badge-good{ background: #E8F4FD; color:#1F6E9C; }
+  .badge-pro{ background: linear-gradient(145deg,#FFF3D6,#FFE2A0); color:#92660B; }
+
+  .result-msg{
+    font-size:14.5px;
+    color: var(--ink-soft);
+    font-weight:600;
+    margin-bottom:20px;
+    line-height:1.5;
+  }
+
+  .btn-row{ display:flex; flex-direction:column; gap:10px; }
+  .btn{
+    border:none;
+    border-radius:999px;
+    padding:14px 18px;
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    cursor:pointer;
+    transition: transform .15s ease, box-shadow .15s ease;
+    min-height:48px;
+  }
+  .btn:hover{ transform: translateY(-2px); }
+  .btn:focus-visible{ outline:3px solid var(--sky-blue); outline-offset:2px; }
+  .btn-primary{ background: var(--grass); color:#fff; box-shadow: 0 8px 16px rgba(54,179,126,.35); }
+  .btn-secondary{ background: var(--cream); color: var(--ink); }
+
+  .confetti-layer{
+    position:absolute;
+    inset:0;
+    overflow:hidden;
+    pointer-events:none;
+  }
+  .confetti-piece{
+    position:absolute;
+    top:-10px;
+    width:8px; height:14px;
+    border-radius:2px;
+    animation: fall linear forwards;
+  }
+  @keyframes fall{
+    to{ transform: translateY(420px) rotate(540deg); opacity:.2; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .confetti-piece{ display:none; }
+  }
+
+  @media (max-width:360px){
+    .scoreboard{ font-size:44px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ================= HOME ================= -->
+  <section id="screen-home" class="screen active">
+    <div class="home-card">
+      <div class="mascot">🏏</div>
+      <h1>Howzat?! Cricket Quiz</h1>
+      <p class="tagline">Step up to the crease and test your cricket smarts!</p>
+
+      <p class="eyebrow">Pick your innings</p>
+      <div class="mode-list">
+        <button class="mode-card mode-basic" data-mode="basic">
+          <span class="mode-icon">🌱</span>
+          <span>
+            <span class="mode-title">Basic</span>
+            <span class="mode-stars">★ ☆ ☆</span>
+            <span class="mode-desc">Easy overs for new fans</span>
+          </span>
+        </button>
+        <button class="mode-card mode-medium" data-mode="medium">
+          <span class="mode-icon">🏏</span>
+          <span>
+            <span class="mode-title">Medium</span>
+            <span class="mode-stars">★ ★ ☆</span>
+            <span class="mode-desc">For seasoned spectators</span>
+          </span>
+        </button>
+        <button class="mode-card mode-hard" data-mode="hard">
+          <span class="mode-icon">🔥</span>
+          <span>
+            <span class="mode-title">Hard</span>
+            <span class="mode-stars">★ ★ ★</span>
+            <span class="mode-desc">Only for true cricket pros</span>
+          </span>
+        </button>
+      </div>
+
+      <div class="legend">
+        <span><span class="lg-badge">🌱</span>Learning<br>0–9</span>
+        <span><span class="lg-badge">🏏</span>Good Knowledge<br>10–16</span>
+        <span><span class="lg-badge">🏆</span>Pro<br>17–20</span>
+      </div>
+      <p class="footer-note">20 fresh questions every round — made for cricket fans of all ages 🏏</p>
+    </div>
+  </section>
+
+  <!-- ================= QUIZ ================= -->
+  <section id="screen-quiz" class="screen">
+    <div class="quiz-topbar">
+      <button class="icon-btn" id="btn-home" aria-label="Back to home">🏠</button>
+      <span class="mode-chip" id="quiz-mode-chip">BASIC</span>
+      <span class="score-chip" id="quiz-score-chip">SCORE 0</span>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span id="progress-text">Question 1 of 20</span>
+        <span id="progress-percent">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+        <span class="progress-ball" id="progress-ball" style="left:0%">🏏</span>
+        <span class="progress-finish">🏆</span>
+      </div>
+    </div>
+
+    <div class="question-card">
+      <p class="q-eyebrow" id="q-eyebrow">QUESTION 1 OF 20</p>
+      <h2 class="q-text" id="q-text">Loading question...</h2>
+      <div class="options" id="options"></div>
+    </div>
+  </section>
+
+  <!-- ================= RESULT ================= -->
+  <section id="screen-result" class="screen">
+    <div class="result-card" id="result-card">
+      <div class="confetti-layer" id="confetti-layer"></div>
+      <p class="result-eyebrow">Round complete</p>
+      <p class="result-mode" id="result-mode">BASIC MODE</p>
+
+      <div class="scoreboard" id="scoreboard">
+        0/20
+        <small>FINAL SCORE</small>
+      </div>
+
+      <div class="badge" id="badge">
+        <span class="badge-icon">🌱</span>
+        <span class="badge-title">Learning</span>
+      </div>
+      <p class="result-msg" id="result-msg">Keep practicing — every great player started somewhere!</p>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-play-again">Play Again</button>
+        <button class="btn btn-secondary" id="btn-change-mode">Choose Another Mode</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============ QUESTION BANKS ============ */
+  // a = index (0-3) of correct option in `o`
+  const QUESTIONS = {
+    basic: [
+      {q:"How many players are on each side in a cricket match?", o:["9","10","11","12"], a:2},
+      {q:"What do you call it when a batter is out without scoring any runs?", o:["Century","Duck","Maiden","Strike"], a:1},
+      {q:"What shape is a cricket ball?", o:["Oval","Square","Round","Flat"], a:2},
+      {q:"How many runs do you score by hitting the ball to the boundary along the ground?", o:["Two","Three","Four","Six"], a:2},
+      {q:"How many runs do you score by hitting the ball over the boundary without it touching the ground?", o:["Four","Five","Six","Eight"], a:2},
+      {q:"What are the wooden sticks behind the batter called?", o:["Bails","Stumps","Poles","Pegs"], a:1},
+      {q:"What is the strip of grass in the middle of the field called, where the bowler runs in to bowl?", o:["The crease","The pitch","The boundary","The square"], a:1},
+      {q:"What do we call the player who delivers the ball to the batter?", o:["Fielder","Wicketkeeper","Bowler","Umpire"], a:2},
+      {q:"Who stands behind the stumps to catch the ball on the batting end?", o:["Bowler","Wicketkeeper","Umpire","Captain"], a:1},
+      {q:"What do you call it when a batter scores 100 runs in an innings?", o:["Half-century","Century","Double","Ton-up"], a:1},
+      {q:"How many overs are bowled per side in a Twenty20 (T20) match?", o:["10","20","50","25"], a:1},
+      {q:"What does LBW stand for?", o:["Left Bat Wide","Leg Before Wicket","Late Ball Warning","Long Boundary Win"], a:1},
+      {q:"Who decides whether a batter is out or not out?", o:["Captain","Coach","Umpire","Scorer"], a:2},
+      {q:"How many balls are bowled in one over?", o:["5","6","7","8"], a:1},
+      {q:"What piece of equipment does a batter use to hit the ball?", o:["Racket","Bat","Stick","Paddle"], a:1},
+      {q:"Which country is widely credited as the birthplace of cricket?", o:["Australia","India","England","South Africa"], a:2},
+      {q:"What is it called when a bowler oversteps the line and bowls an illegal delivery?", o:["Wide","No-ball","Bye","Dead ball"], a:1},
+      {q:"What is it called when a bowler bowls too far from the batter to be fairly hit?", o:["No-ball","Wide","Bye","Short ball"], a:1},
+      {q:"What do we call it when all the batters on a team have been dismissed?", o:["Bowled out","All out","Game over","Closed innings"], a:1},
+      {q:"What colour is the ball traditionally used in Test cricket?", o:["White","Pink","Red","Orange"], a:2},
+      {q:"What colour ball is normally used in T20 and ODI matches?", o:["Red","White","Yellow","Pink"], a:1},
+      {q:"How many days does a traditional Test match last?", o:["1","3","5","7"], a:2},
+      {q:"What do we call the protective gear worn on a batter's legs?", o:["Shin guards","Pads","Leg covers","Knee caps"], a:1},
+      {q:"What is it called when a bowler takes three wickets on three consecutive balls?", o:["Triple wicket","Hat-trick","Triple strike","Wicket hat"], a:1},
+      {q:"What do we call it when a fielder catches the ball before it touches the ground to dismiss a batter?", o:["Catch","Stop","Grab","Block"], a:0}
+    ],
+    medium: [
+      {q:"What is an over called in which no runs are scored?", o:["Dot over","Maiden over","Clean over","Zero over"], a:1},
+      {q:"What is a 'Yorker' in cricket?", o:["A very short, fast bouncer","A ball pitched at the batter's feet or base of the stumps","A slow spinning delivery","A ball bowled above shoulder height"], a:1},
+      {q:"In a 50-over ODI innings, what is the maximum number of overs one bowler can bowl?", o:["8","10","12","15"], a:1},
+      {q:"What is the 'Powerplay' in limited-overs cricket?", o:["A period with fielding restrictions","Extra time added to the match","A bonus-runs rule","The final over of the innings"], a:0},
+      {q:"Which method is used to reset the target score when a limited-overs match is interrupted by rain?", o:["Net Run Rate Method","Duckworth-Lewis-Stern Method","Super Over Method","Fielding Restriction Method"], a:1},
+      {q:"What is the name of the line a bowler must not overstep when delivering the ball?", o:["Popping crease","Boundary line","Return crease","Fielding circle"], a:0},
+      {q:"Which trophy is contested between England and Australia in Test cricket?", o:["The Border-Gavaskar Trophy","The Ashes","The Wisden Trophy","The Frank Worrell Trophy"], a:1},
+      {q:"What is a 'googly' in cricket?", o:["A fielding drill","A leg-spinner's ball that turns the opposite way to a normal leg break","A very fast yorker","A type of boundary catch"], a:1},
+      {q:"What do we call extra runs scored when the ball passes the bat and body, and the batters run?", o:["No-ball","Wide","Bye","Overthrow"], a:2},
+      {q:"What is the traditional appeal shouted by fielders asking the umpire for an out decision?", o:["\"Howzat!\"","\"Out call!\"","\"Check it!\"","\"Review!\""], a:0},
+      {q:"In Test cricket, what is a 'follow-on'?", o:["The team batting second is forced to bat again immediately after falling far behind","An extra bonus innings","A penalty over for slow play","A rotation of fielding positions"], a:0},
+      {q:"Which close fielding position sits beside the wicketkeeper, used to catch fine deflections off the bat?", o:["Slip","Gully","Cover","Mid-on"], a:0},
+      {q:"What does 'DRS' stand for in modern cricket?", o:["Direct Run Score","Decision Review System","Digital Replay Service","Defensive Run Strategy"], a:1},
+      {q:"Which nickname is associated with Rahul Dravid?", o:["The Wall","The Wizard","Master Blaster","The Rock"], a:0},
+      {q:"Which nickname is associated with Sachin Tendulkar?", o:["The Wall","Master Blaster","Captain Cool","The Wizard"], a:1},
+      {q:"Which nickname is associated with MS Dhoni?", o:["The Wall","Master Blaster","Captain Cool","The Doctor"], a:2},
+      {q:"Which close fielding position on the leg side, very near the bat, is mainly used against spin bowling?", o:["Short leg","Long leg","Deep square leg","Fine leg"], a:0},
+      {q:"What term describes a bowler taking five or more wickets in a single innings?", o:["Five-for","High strike","Wicket haul","Super spell"], a:0},
+      {q:"In which country did the Big Bash League T20 competition originate?", o:["India","Australia","England","South Africa"], a:1},
+      {q:"Which IPL franchise represents the city of Chennai?", o:["Chennai Super Kings","Chennai Royals","Chennai Titans","Chennai Strikers"], a:0},
+      {q:"What is a 'beamer' in cricket?", o:["A slow off-spin delivery","A full-toss bowled above waist height without bouncing","A late-swinging delivery","A defensive shot"], a:1},
+      {q:"What is the fielding-restriction boundary called in limited-overs cricket?", o:["The 30-yard circle","The boundary rope","The infield arc","The fair-catch zone"], a:0},
+      {q:"Who captained India to victory in the inaugural ICC T20 World Cup in 2007?", o:["Sourav Ganguly","Rahul Dravid","MS Dhoni","Virat Kohli"], a:2},
+      {q:"Which team won the first-ever Cricket World Cup in 1975?", o:["Australia","England","West Indies","India"], a:2},
+      {q:"In which English city is Lord's Cricket Ground, known as the 'Home of Cricket', located?", o:["Manchester","Birmingham","London","Leeds"], a:2}
+    ],
+    hard: [
+      {q:"Who holds the record for the highest individual score in a Test innings, with 400 not out?", o:["Sachin Tendulkar","Brian Lara","Don Bradman","Virender Sehwag"], a:1},
+      {q:"Who has taken the most wickets in Test cricket history?", o:["Shane Warne","Muttiah Muralitharan","Anil Kumble","James Anderson"], a:1},
+      {q:"Who holds the record for the most runs scored in Test cricket history?", o:["Ricky Ponting","Sachin Tendulkar","Brian Lara","Kumar Sangakkara"], a:1},
+      {q:"Which country won the 2023 ICC Men's Cricket World Cup, defeating India in the final?", o:["England","Australia","South Africa","New Zealand"], a:1},
+      {q:"Which country won the 2024 ICC Men's T20 World Cup, defeating South Africa in the final?", o:["Pakistan","India","England","Sri Lanka"], a:1},
+      {q:"Which Indian bowler took all 10 wickets in a single Test innings against Pakistan in 1999?", o:["Anil Kumble","Kapil Dev","Harbhajan Singh","Ravichandran Ashwin"], a:0},
+      {q:"Who was the first cricketer to score a double century (200 runs) in an ODI innings?", o:["Virender Sehwag","Sachin Tendulkar","Rohit Sharma","Chris Gayle"], a:1},
+      {q:"Who holds the record for the highest individual score in an ODI innings, with 264 runs?", o:["Virender Sehwag","Rohit Sharma","Martin Guptill","Sachin Tendulkar"], a:1},
+      {q:"Who holds the record for the most wickets taken in ODI cricket history?", o:["Wasim Akram","Muttiah Muralitharan","Shahid Afridi","Anil Kumble"], a:1},
+      {q:"In which year was the Indian Premier League (IPL) first played?", o:["2005","2006","2007","2008"], a:3},
+      {q:"Which country won the first-ever ICC T20 World Cup, held in South Africa in 2007?", o:["Pakistan","India","Sri Lanka","Australia"], a:1},
+      {q:"Who captained the West Indies team that won the first two Cricket World Cups in 1975 and 1979?", o:["Viv Richards","Clive Lloyd","Garfield Sobers","Frank Worrell"], a:1},
+      {q:"Which country has won the most ICC Men's Cricket World Cup titles?", o:["West Indies","India","Australia","Pakistan"], a:2},
+      {q:"Who became the only bowler to take more than one hat-trick in T20 World Cup history, during the 2024 edition?", o:["Lasith Malinga","Pat Cummins","Rashid Khan","Jasprit Bumrah"], a:1},
+      {q:"Who was named Player of the Match in the 2024 T20 World Cup final?", o:["Rohit Sharma","Virat Kohli","Jasprit Bumrah","Hardik Pandya"], a:1},
+      {q:"Which Pakistani fast bowler is nicknamed the 'Sultan of Swing'?", o:["Waqar Younis","Wasim Akram","Imran Khan","Shoaib Akhtar"], a:1},
+      {q:"Which bowler is nicknamed the 'Rawalpindi Express' for his extreme pace?", o:["Waqar Younis","Shoaib Akhtar","Wasim Akram","Mohammad Asif"], a:1},
+      {q:"Who captained India to win the inaugural Cricket World Cup in 1983?", o:["Sunil Gavaskar","Kapil Dev","Mohinder Amarnath","Gundappa Vishwanath"], a:1},
+      {q:"Which Australian batter is regarded as cricket's greatest ever, with a Test batting average of 99.94?", o:["Ricky Ponting","Don Bradman","Steve Waugh","Allan Border"], a:1},
+      {q:"How is a bowler's 'economy rate' calculated?", o:["Wickets taken per match","Average runs conceded per over bowled","Overs bowled per match","Dismissals per innings"], a:1},
+      {q:"How is a batter's 'strike rate' calculated?", o:["Runs scored divided by balls faced","(Runs scored divided by balls faced) multiplied by 100","Total runs scored in a season","Balls faced per dismissal"], a:1},
+      {q:"Which trophy is contested between India and Australia in Test cricket?", o:["The Ashes","Border-Gavaskar Trophy","Wisden Trophy","Frank Worrell Trophy"], a:1},
+      {q:"Which trophy is contested between the West Indies and Australia in Test cricket?", o:["The Ashes","Frank Worrell Trophy","Wisden Trophy","Border-Gavaskar Trophy"], a:1},
+      {q:"Who became the leading run-scorer in T20 International history during the 2024 T20 World Cup, surpassing Babar Azam?", o:["Virat Kohli","Babar Azam","Rohit Sharma","Martin Guptill"], a:2},
+      {q:"What is the maximum number of fielders allowed on the leg side of the field at the moment the ball is delivered?", o:["4","5","6","7"], a:1}
+    ]
+  };
+
+  const ROUND_SIZE = 20;
+  const LETTERS = ["A","B","C","D"];
+
+  let state = { mode:null, round:[], idx:0, score:0, locked:false };
+
+  /* ============ helpers ============ */
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+
+  function buildRound(mode){
+    const pool = QUESTIONS[mode];
+    const chosen = shuffle(pool).slice(0, Math.min(ROUND_SIZE, pool.length));
+    return chosen.map(q=>{
+      const opts = q.o.map((text,i)=>({ text, correct: i === q.a }));
+      return { text: q.q, options: shuffle(opts) };
+    });
+  }
+
+  function showScreen(id){
+    document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+  }
+
+  /* ============ quiz flow ============ */
+  function startMode(mode){
+    state.mode = mode;
+    state.round = buildRound(mode);
+    state.idx = 0;
+    state.score = 0;
+    state.locked = false;
+    document.getElementById("quiz-mode-chip").textContent = mode.toUpperCase();
+    showScreen("screen-quiz");
+    renderQuestion();
+  }
+
+  function renderQuestion(){
+    const total = state.round.length;
+    const q = state.round[state.idx];
+
+    document.getElementById("quiz-score-chip").textContent = "SCORE " + state.score;
+    document.getElementById("q-eyebrow").textContent = "QUESTION " + (state.idx+1) + " OF " + total;
+    document.getElementById("progress-text").textContent = "Question " + (state.idx+1) + " of " + total;
+
+    const pct = Math.round((state.idx/total)*100);
+    document.getElementById("progress-percent").textContent = pct + "%";
+    document.getElementById("progress-fill").style.width = pct + "%";
+    document.getElementById("progress-ball").style.left = pct + "%";
+
+    document.getElementById("q-text").textContent = q.text;
+
+    const optionsEl = document.getElementById("options");
+    optionsEl.innerHTML = "";
+    q.options.forEach((opt, i)=>{
+      const btn = document.createElement("button");
+      btn.className = "option";
+      btn.innerHTML = '<span class="opt-letter">' + LETTERS[i] + '</span><span>' + opt.text + '</span>';
+      btn.addEventListener("click", ()=> handleAnswer(btn, opt));
+      optionsEl.appendChild(btn);
+    });
+
+    state.locked = false;
+  }
+
+  function handleAnswer(selectedBtn, opt){
+    if(state.locked) return;
+    state.locked = true;
+
+    const allOptions = document.querySelectorAll("#options .option");
+    allOptions.forEach(b=> b.classList.add("locked"));
+
+    if(opt.correct){
+      selectedBtn.classList.add("correct");
+      state.score++;
+    } else {
+      selectedBtn.classList.add("wrong");
+      allOptions.forEach(b=>{
+        if(b !== selectedBtn) b.classList.add("dim");
+      });
+      const q = state.round[state.idx];
+      const correctIndex = q.options.findIndex(o=>o.correct);
+      allOptions[correctIndex].classList.add("correct");
+      allOptions[correctIndex].classList.remove("dim");
+    }
+
+    document.getElementById("quiz-score-chip").textContent = "SCORE " + state.score;
+
+    setTimeout(nextQuestion, 1100);
+  }
+
+  function nextQuestion(){
+    state.idx++;
+    if(state.idx >= state.round.length){
+      finishQuiz();
+    } else {
+      renderQuestion();
+    }
+  }
+
+  function finishQuiz(){
+    const total = state.round.length;
+    const score = state.score;
+
+    document.getElementById("progress-fill").style.width = "100%";
+    document.getElementById("progress-ball").style.left = "100%";
+
+    let tier;
+    if(score >= 17) tier = "pro";
+    else if(score >= 10) tier = "good";
+    else tier = "learning";
+
+    const badgeEl = document.getElementById("badge");
+    const msgEl = document.getElementById("result-msg");
+    badgeEl.className = "badge badge-" + tier;
+
+    if(tier === "pro"){
+      badgeEl.innerHTML = '<span class="badge-icon">🏆</span><span class="badge-title">Pro</span>';
+      msgEl.textContent = "Outstanding! You play cricket trivia like a true champion.";
+    } else if(tier === "good"){
+      badgeEl.innerHTML = '<span class="badge-icon">🏏</span><span class="badge-title">Good Knowledge</span>';
+      msgEl.textContent = "Nice innings! You know your way around the game.";
+    } else {
+      badgeEl.innerHTML = '<span class="badge-icon">🌱</span><span class="badge-title">Learning</span>';
+      msgEl.textContent = "Good start! Keep playing to grow your cricket knowledge.";
+    }
+
+    document.getElementById("result-mode").textContent = state.mode.toUpperCase() + " MODE";
+    document.getElementById("scoreboard").innerHTML = score + "/" + total + "<small>FINAL SCORE</small>";
+
+    showScreen("screen-result");
+
+    if(tier === "pro") triggerConfetti();
+  }
+
+  function triggerConfetti(){
+    const layer = document.getElementById("confetti-layer");
+    layer.innerHTML = "";
+    const colors = ["#36B37E","#FFC93C","#FF5A4E","#4DA8DA","#A6EBC9"];
+    for(let i=0;i<28;i++){
+      const piece = document.createElement("span");
+      piece.className = "confetti-piece";
+      piece.style.left = Math.random()*100 + "%";
+      piece.style.background = colors[Math.floor(Math.random()*colors.length)];
+      piece.style.animationDuration = (1.6 + Math.random()*1.2) + "s";
+      piece.style.animationDelay = (Math.random()*0.4) + "s";
+      layer.appendChild(piece);
+    }
+    setTimeout(()=>{ layer.innerHTML = ""; }, 3200);
+  }
+
+  function goHome(){
+    if(state.round.length && state.idx > 0 && state.idx < state.round.length){
+      const ok = confirm("Leave this quiz? Your progress will be lost.");
+      if(!ok) return;
+    }
+    showScreen("screen-home");
+  }
+
+  /* ============ wire up events ============ */
+  document.querySelectorAll(".mode-card").forEach(card=>{
+    card.addEventListener("click", ()=> startMode(card.getAttribute("data-mode")));
+  });
+  document.getElementById("btn-home").addEventListener("click", goHome);
+  document.getElementById("btn-change-mode").addEventListener("click", ()=> showScreen("screen-home"));
+  document.getElementById("btn-play-again").addEventListener("click", ()=> startMode(state.mode));
+
+})();
+</script>
+</body>
+</html>
